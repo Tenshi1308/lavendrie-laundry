@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
-export const metadata: Metadata = {
+export const metadata = {
   title: "Lavendrie Laundry",
-  description: "Aplikasi laundry sederhana untuk memudahkan pelanggan dalam membuat order dan melihat riwayat order mereka.",
-  viewport: "width=device-width, initial-scale=1",
-};
+}
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+}
 
 export default function RootLayout({
   children,

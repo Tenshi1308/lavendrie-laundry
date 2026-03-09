@@ -13,7 +13,6 @@ type Order = {
   customerName: string
   phone: string
   address: string
-  status: string
   createdAt: Date
 }
 
