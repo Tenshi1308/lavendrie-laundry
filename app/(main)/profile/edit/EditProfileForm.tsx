@@ -147,7 +147,7 @@ export function EditProfileForm({ user }: EditProfileFormProps) {
               Ingin mengganti password?
             </p>
             <Link
-              href={`/reset-password?email=${encodeURIComponent(user.email)}`}
+              href={`/verify-phone?email=${encodeURIComponent(user.email)}`}
               className="text-sm text-primary hover:underline inline-flex items-center"
             >
               Ganti Password
