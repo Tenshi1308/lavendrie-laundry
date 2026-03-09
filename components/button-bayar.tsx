@@ -14,7 +14,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 
-const ADMIN_PHONE = "6282121152064" // nomor WhatsApp admin
+const ADMIN_PHONE = "081215132220" // nomor WhatsApp admin
 
 interface ButtonBayarProps {
   order: {
