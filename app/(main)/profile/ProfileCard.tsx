@@ -90,7 +90,7 @@ export function ProfileCardClient({ user }: ProfileCardClientProps) {
           <div className="pt-4 border-t">
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">
-                Versi 4 Maret 2026
+                Ver. 1.3.9
               </p>
               <form action={logout}>
                 <Button type="submit" size="sm" variant="ghost" className="flex items-center gap-1 hover:bg-red-500 hover:text-white">
