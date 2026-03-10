@@ -19,7 +19,7 @@ interface ProfileCardClientProps {
   user: {
     name: string;
     email: string;
-    avatar: string;
+    avatar: string | null; // Perbaiki tipe, bisa null
     phone: string;
     role: string;
     memberSince: string;
@@ -33,7 +33,11 @@ export function ProfileCardClient({ user }: ProfileCardClientProps) {
     .split(" ")
     .map((n) => n[0])
     .join("")
-    .toUpperCase();
+    .toUpperCase()
+    .slice(0, 2); // Ambil maksimal 2 huruf
+
+  // Pastikan avatar tidak null/undefined untuk dialog
+  const hasAvatar = !!user.avatar;
 
   return (
     <>
@@ -48,16 +52,15 @@ export function ProfileCardClient({ user }: ProfileCardClientProps) {
           </Link>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Avatar dengan klik */}
           <div className="flex items-center gap-4">
             <button
-              onClick={() => user.avatar && setOpen(true)}
-              className={`relative ${user.avatar ? "cursor-pointer" : "cursor-default"}`}
-              disabled={!user.avatar}
-              title={user.avatar ? "Klik untuk melihat" : "Tidak ada foto profil"}
+              onClick={() => hasAvatar && setOpen(true)}
+              className={`relative ${hasAvatar ? "cursor-pointer" : "cursor-default"}`}
+              disabled={!hasAvatar}
+              title={hasAvatar ? "Klik untuk melihat" : "Tidak ada foto profil"}
             >
               <Avatar className="h-20 w-20">
-                <AvatarImage src={user.avatar} />
+                <AvatarImage src={user.avatar || ""} className="object-cover" />
                 <AvatarFallback className="text-2xl">{initials}</AvatarFallback>
               </Avatar>
             </button>
@@ -90,7 +93,7 @@ export function ProfileCardClient({ user }: ProfileCardClientProps) {
           <div className="pt-4 border-t">
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">
-                Ver. 1.3.9
+                Ver. 1.3.10
               </p>
               <form action={logout}>
                 <Button type="submit" size="sm" variant="ghost" className="flex items-center gap-1 hover:bg-red-500 hover:text-white">
@@ -103,21 +106,23 @@ export function ProfileCardClient({ user }: ProfileCardClientProps) {
         </CardContent>
       </Card>
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="bg-transparent border-gray-500 backdrop-blur-sm shadow-none w-screen h-auto p-0 m-0 [&>button]:hidden">
-          <DialogHeader>
-            <DialogTitle className="px-6 pt-6">Foto Profil {user.name}</DialogTitle>
-          </DialogHeader>
-          <div className="relative w-full h-full flex items-center justify-center">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={user.avatar}
-              alt={`Foto profil ${user.name}`}
-              className="max-w-auto max-h-[70vh] object-contain px-6 pb-6"
-            />
-          </div>
-        </DialogContent>
-      </Dialog>
+      {hasAvatar && (
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogContent className="bg-transparent border-gray-500 backdrop-blur-sm shadow-none w-screen h-auto p-0 m-0 [&>button]:hidden">
+            <DialogHeader>
+              <DialogTitle className="px-6 pt-6">Foto Profil {user.name}</DialogTitle>
+            </DialogHeader>
+            <div className="relative w-full h-full flex items-center justify-center">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={user.avatar!}
+                alt={`Foto profil ${user.name}`}
+                className="max-w-full max-h-[70vh] object-contain px-6 pb-6"
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </>
   );
 }

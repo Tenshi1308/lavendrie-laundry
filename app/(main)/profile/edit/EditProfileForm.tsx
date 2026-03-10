@@ -314,6 +314,7 @@ export function EditProfileForm({ user }: EditProfileFormProps) {
         </form>
       </Card>
 
+      {/* Dialog Crop */}
       <Dialog open={showCropDialog} onOpenChange={setShowCropDialog}>
         <DialogContent className="bg-transparent border-gray-500 backdrop-blur-sm shadow-none w-screen h-auto p-6 m-0 [&>button]:hidden">
           <DialogHeader>
@@ -331,6 +332,16 @@ export function EditProfileForm({ user }: EditProfileFormProps) {
                 onCropComplete={onCropComplete}
               />
             )}
+          </div>
+          <div className="py-2">
+            <p className="text-sm mb-2">Zoom</p>
+            <Slider
+              value={[zoom]}
+              min={1}
+              max={3}
+              step={0.1}
+              onValueChange={(value) => setZoom(value[0])}
+            />
           </div>
           <DialogFooter className="flex justify-end gap-2">
             <Button
