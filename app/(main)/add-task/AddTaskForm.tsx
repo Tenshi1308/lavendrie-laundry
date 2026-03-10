@@ -297,7 +297,7 @@ export function AddTaskForm() {
                 type="button"
                 onClick={handleDetectLocation}
                 disabled={isLocating || isSubmitting}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 border-dashed border-blue-200 bg-blue-50/50 text-blue-600 text-sm font-medium hover:bg-blue-50 hover:border-blue-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 text-gray-600 text-sm font-medium hover:bg-gray-100 hover:border-gray-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLocating ? (
                   <><Loader2 className="h-4 w-4 animate-spin" /> Mendeteksi lokasi...</>
@@ -462,7 +462,7 @@ export function AddTaskForm() {
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm shadow-sm"
+              className="flex-1 h-12 rounded-xl bg-black text-white font-medium text-sm shadow-sm"
             >
               {isSubmitting ? (
                 <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Menyimpan...</>

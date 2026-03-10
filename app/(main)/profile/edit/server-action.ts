@@ -8,7 +8,7 @@ import { randomBytes } from 'crypto';
 
 // Konfigurasi upload
 const UPLOAD_DIR = path.join(process.cwd(), 'public/uploads/avatars');
-const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 
 // Pastikan direktori ada
@@ -53,7 +53,7 @@ export async function updateProfile(formData: FormData) {
   if (avatarFile && avatarFile.size > 0) {
     // Validasi ukuran
     if (avatarFile.size > MAX_FILE_SIZE) {
-      return { success: false, error: "Ukuran file maksimal 2MB" };
+      return { success: false, error: "Ukuran file maksimal 5MB" };
     }
     // Validasi tipe
     if (!ALLOWED_TYPES.includes(avatarFile.type)) {
