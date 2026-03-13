@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma"
 import { getSession } from "@/lib/auth"
 import { revalidatePath } from "next/cache"
+import { orderRateLimiter } from "@/lib/rate-limit"
 
 export async function createOrder(data: {
   orderDate: string
@@ -15,6 +16,14 @@ export async function createOrder(data: {
 }) {
   const session = await getSession()
   if (!session) return { error: "Unauthorized" }
+
+  const { success, limit, reset } = await orderRateLimiter.limit(`order:${session.userId}`)
+  if (!success) {
+    const resetInSeconds = Math.ceil((reset - Date.now()) / 1000)
+    return { 
+      error: `Terlalu banyak percobaan. Maksimal ${limit} order per menit. Coba lagi dalam ${resetInSeconds} detik.` 
+    }
+  }
 
   try {
     await prisma.order.create({

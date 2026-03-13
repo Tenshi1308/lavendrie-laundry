@@ -43,7 +43,7 @@ export function ProfileCardClient({ user }: ProfileCardClientProps) {
           <Link href="/profile/edit" passHref>
             <Button variant="outline" size="sm">
               <Edit className="h-4 w-4 mr-2" />
-              Edit Profil
+              Edit Profile
             </Button>
           </Link>
         </CardHeader>
@@ -54,7 +54,7 @@ export function ProfileCardClient({ user }: ProfileCardClientProps) {
               onClick={() => user.avatar && setOpen(true)}
               className={`relative ${user.avatar ? "cursor-pointer" : "cursor-default"}`}
               disabled={!user.avatar}
-              title={user.avatar ? "Klik untuk melihat" : "Tidak ada foto profil"}
+              title={user.avatar ? "Klik untuk melihat" : "Tidak ada foto profile"}
             >
               <Avatar className="h-20 w-20">
                 <AvatarImage src={user.avatar} className="object-cover" />
@@ -90,7 +90,7 @@ export function ProfileCardClient({ user }: ProfileCardClientProps) {
           <div className="pt-4 border-t">
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">
-                Ver. 1.3.10
+                Ver. 1.3.13
               </p>
               <form action={logout}>
                 <Button type="submit" size="sm" variant="ghost" className="flex items-center gap-1 hover:bg-red-500 hover:text-white">
@@ -106,13 +106,13 @@ export function ProfileCardClient({ user }: ProfileCardClientProps) {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="bg-transparent border-gray-500 backdrop-blur-sm shadow-none w-screen h-auto p-0 m-0 [&>button]:hidden">
           <DialogHeader>
-            <DialogTitle className="px-6 pt-6">Foto Profil {user.name}</DialogTitle>
+            <DialogTitle className="px-6 pt-6">Foto Profile {user.name}</DialogTitle>
           </DialogHeader>
           <div className="relative w-full h-full flex items-center justify-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={user.avatar}
-              alt={`Foto profil ${user.name}`}
+              alt={`Foto profile ${user.name}`}
               className="max-w-auto max-h-[70vh] object-contain px-6 pb-6"
             />
           </div>

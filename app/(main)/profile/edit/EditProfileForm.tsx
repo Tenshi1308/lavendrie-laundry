@@ -13,7 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { updateProfile } from "./server-action";
+import { updateProfile, generateSignature } from "./server-action";
 import { toast } from "sonner";
 import Link from "next/link";
 
@@ -31,6 +31,40 @@ export function EditProfileForm({ user }: EditProfileFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(user.avatar || null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  async function uploadAvatar(file: File): Promise<string> {
+    let sigData;
+    try {
+      sigData = await generateSignature();
+    } catch (err: any) {
+      if (err.message?.includes('Rate limit')) {
+        throw new Error("Terlalu banyak percobaan upload. Silakan coba lagi nanti.");
+      }
+      throw new Error("Gagal mendapatkan izin upload");
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('api_key', sigData.apiKey);
+    formData.append('timestamp', sigData.timestamp.toString());
+    formData.append('signature', sigData.signature);
+    formData.append('folder', sigData.folder);
+    formData.append('public_id', sigData.public_id);
+
+    const response = await fetch(
+      `https://api.cloudinary.com/v1_1/${sigData.cloudName}/image/upload`,
+      { method: 'POST', body: formData }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error?.message || 'Upload gagal');
+    }
+
+    const data = await response.json();
+    return data.secure_url;
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -38,28 +72,58 @@ export function EditProfileForm({ user }: EditProfileFormProps) {
     setError(null);
 
     const formData = new FormData(e.currentTarget);
-
-    // Validasi sederhana di client
     const name = formData.get('name') as string;
+    const phone = (formData.get('phone') as string) || '';
+
     if (!name?.trim()) {
       setError("Nama harus diisi");
       setIsLoading(false);
       return;
     }
 
-    const result = await updateProfile(formData);
-    if (result.success) {
-      toast.success("Profil berhasil diperbarui");
-      router.push("/profile");
-      router.refresh();
-    } else {
-      setError(result.error || "Terjadi kesalahan");
+    const submitData = new FormData();
+    submitData.append('name', name.trim());
+    submitData.append('phone', phone);
+
+    try {
+      if (selectedFile) {
+        const MAX_SIZE = 3 * 1024 * 1024;
+        if (selectedFile.size > MAX_SIZE) {
+          setError("Ukuran file maksimal 3MB");
+          setIsLoading(false);
+          return;
+        }
+
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+        if (!allowedTypes.includes(selectedFile.type)) {
+          setError("Tipe file tidak diizinkan. Gunakan JPG, PNG, WEBP, atau GIF");
+          setIsLoading(false);
+          return;
+        }
+
+        const avatarUrl = await uploadAvatar(selectedFile);
+        submitData.append('avatarUrl', avatarUrl);
+      }
+
+      const result = await updateProfile(submitData);
+      if (result.success) {
+        toast.success("Profil berhasil diperbarui");
+        setIsLoading(false);
+        router.push("/profile");
+        router.refresh();
+      } else {
+        setError(result.error || "Gagal memperbarui profil");
+        setIsLoading(false);
+      }
+    } catch (err: any) {
+      setError(err.message || "Gagal upload avatar");
       setIsLoading(false);
     }
   }
 
   function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
+    setSelectedFile(file || null);
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -81,7 +145,7 @@ export function EditProfileForm({ user }: EditProfileFormProps) {
           {/* Avatar Upload */}
           <div className="flex items-center gap-4">
             <Avatar className="h-20 w-20">
-              <AvatarImage src={avatarPreview || ""} />
+              <AvatarImage src={avatarPreview || ""} className="object-cover" />
               <AvatarFallback className="text-2xl">
                 {user.name
                   .split(" ")
@@ -101,7 +165,7 @@ export function EditProfileForm({ user }: EditProfileFormProps) {
                 className="mt-1"
               />
               <p className="text-xs text-muted-foreground mt-1">
-                Maksimal 2MB. Format: JPG, PNG, WEBP, GIF
+                Maksimal 3MB. Format: JPG, PNG, WEBP, GIF
               </p>
             </div>
           </div>

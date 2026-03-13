@@ -2,90 +2,111 @@
 
 import { getCurrentUser } from "@/lib/auth-server";
 import { getUserById, updateUser } from "@/lib/db";
-import fs from 'fs/promises';
-import path from 'path';
+import { cloudinary } from "@/lib/cloudinary";
 import { randomBytes } from 'crypto';
+import { rateLimiter } from "@/lib/rate-limit";
 
-// Konfigurasi upload
-const UPLOAD_DIR = path.join(process.cwd(), 'public/uploads/avatars');
-const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
-const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-
-// Pastikan direktori ada
-async function ensureUploadDir() {
-  try {
-    await fs.access(UPLOAD_DIR);
-  } catch {
-    await fs.mkdir(UPLOAD_DIR, { recursive: true });
+// Generate signature untuk signed upload ke Cloudinary
+export async function generateSignature(): Promise<{
+  signature: string;
+  timestamp: number;
+  folder: string;
+  public_id: string;
+  apiKey: string;
+  cloudName: string;
+}> {
+  const currentUser = await getCurrentUser();
+  if (!currentUser?.id) {
+    throw new Error("Unauthorized");
   }
+
+  // Rate limiting dengan Redis (5 request per menit)
+  const { success, limit, reset } = await rateLimiter.limit(currentUser.id);
+  if (!success) {
+    const resetInSeconds = Math.ceil((reset - Date.now()) / 1000);
+    throw new Error(
+      `Rate limit exceeded. Maksimal ${limit} request per menit. Coba lagi dalam ${resetInSeconds} detik.`
+    );
+  }
+
+  // Validasi environment variables
+  const apiKey = process.env.CLOUDINARY_API_KEY;
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+
+  if (!apiKey) {
+    throw new Error("CLOUDINARY_API_KEY tidak ditemukan di environment");
+  }
+  if (!cloudName) {
+    throw new Error("NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME tidak ditemukan di environment");
+  }
+
+  const timestamp = Math.round(Date.now() / 1000);
+  const folder = 'avatars';
+  const publicId = `avatar_${currentUser.id}_${randomBytes(4).toString('hex')}_${timestamp}`;
+
+  const paramsToSign = {
+    timestamp,
+    folder,
+    public_id: publicId,
+  };
+
+  const signature = cloudinary.utils.api_sign_request(
+    paramsToSign,
+    process.env.CLOUDINARY_API_SECRET!
+  );
+
+  return {
+    signature,
+    timestamp,
+    folder,
+    public_id: publicId,
+    apiKey,
+    cloudName,
+  };
 }
 
+// Update profil (nama, telepon, avatar URL)
 export async function updateProfile(formData: FormData) {
-  // 1. Ambil data dari FormData
   const name = formData.get('name') as string | null;
-  const avatarFile = formData.get('avatar') as File | null;
+  const phone = formData.get('phone') as string | null;
+  const avatarUrl = formData.get('avatarUrl') as string | null;
 
-  // 2. Validasi nama
-  if (!name || typeof name !== 'string' || name.trim() === '') {
+  if (!name?.trim()) {
     return { success: false, error: "Nama harus diisi" };
   }
 
-  // 3. Dapatkan user dari session
   const currentUser = await getCurrentUser();
   if (!currentUser?.id) {
     return { success: false, error: "Anda harus login" };
   }
 
-  // 4. Ambil user dari database (untuk avatar lama)
   const userFromDb = await getUserById(currentUser.id);
   if (!userFromDb) {
     return { success: false, error: "User tidak ditemukan" };
   }
 
-  // 5. Siapkan data update
-  const phone = formData.get('phone') as string | null;
   const updateData: { name: string; avatar?: string; phone?: string } = {
     name: name.trim(),
-    phone: phone?.trim() || undefined
+    phone: phone?.trim() || undefined,
   };
 
-  // 6. Proses avatar jika ada file
-  if (avatarFile && avatarFile.size > 0) {
-    // Validasi ukuran
-    if (avatarFile.size > MAX_FILE_SIZE) {
-      return { success: false, error: "Ukuran file maksimal 2MB" };
-    }
-    // Validasi tipe
-    if (!ALLOWED_TYPES.includes(avatarFile.type)) {
-      return { success: false, error: "Tipe file tidak diizinkan. Gunakan JPG, PNG, WEBP, atau GIF" };
-    }
-
-    // Generate nama unik
-    const ext = path.extname(avatarFile.name) || '.jpg';
-    const fileName = `avatar-${Date.now()}-${randomBytes(4).toString('hex')}${ext}`;
-    const filePath = path.join(UPLOAD_DIR, fileName);
-
-    // Simpan file
-    await ensureUploadDir();
-    const buffer = Buffer.from(await avatarFile.arrayBuffer());
-    await fs.writeFile(filePath, buffer);
-
-    // URL untuk diakses publik
-    const avatarUrl = `/uploads/avatars/${fileName}`;
+  if (avatarUrl) {
     updateData.avatar = avatarUrl;
 
-    // Hapus avatar lama jika ada
+    // Hapus avatar lama dari Cloudinary (opsional)
     if (userFromDb.avatar) {
-      const oldPath = path.join(process.cwd(), 'public', userFromDb.avatar);
-      try {
-        await fs.unlink(oldPath);
-      } catch (err) {
-        // Abaikan jika file tidak ada
+      const oldUrl = userFromDb.avatar;
+      const matches = oldUrl.match(/\/upload\/(?:v\d+\/)?(.+)\.[a-z]+$/);
+      if (matches && matches[1]) {
+        try {
+          await cloudinary.uploader.destroy(matches[1]);
+        } catch (err) {
+          console.error("Gagal hapus avatar lama:", err);
+        }
       }
     }
   }
 
-  // 7. Simpan perubahan ke database (hanya nama dan avatar)
   try {
     await updateUser(currentUser.id, updateData);
     return { success: true };
