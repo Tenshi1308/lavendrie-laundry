@@ -16,3 +16,17 @@ export const orderRateLimiter = new Ratelimit({
   limiter: Ratelimit.slidingWindow(1, "60 s"),
   analytics: true,
 });
+
+// Rate limiter untuk login 5 request per menit
+export const loginRateLimiter = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(5, "60 s"),
+  analytics: true,
+});
+
+// Rate limiter untuk register 1 request per menit
+export const registerRateLimiter = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(1, "60 s"),
+  analytics: true,
+});

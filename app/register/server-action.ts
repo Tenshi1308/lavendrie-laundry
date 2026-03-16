@@ -3,6 +3,15 @@
 import { prisma } from "@/lib/prisma"
 import { hashPassword, setSession } from "@/lib/auth"
 import { redirect } from "next/navigation"
+import { registerRateLimiter } from "@/lib/rate-limit"
+import { headers } from "next/headers"
+
+async function getIP(): Promise<string> {
+  const headersList = await headers()
+  const forwardedFor = headersList.get("x-forwarded-for")
+  const realIP = headersList.get("x-real-ip")
+  return forwardedFor?.split(",")[0]?.trim() ?? realIP ?? "anonymous"
+}
 
 export async function register(data: {
   name: string
@@ -10,6 +19,17 @@ export async function register(data: {
   phone: string
   password: string
 }) {
+  // Rate limiting (1 request per menit)
+  const ip = await getIP()
+  const { success, limit, reset } = await registerRateLimiter.limit(`register:${ip}`)
+
+  if (!success) {
+    const resetInSeconds = Math.ceil((reset - Date.now()) / 1000)
+    return {
+      error: `Terlalu banyak percobaan register. Maksimal ${limit} request per menit. Coba lagi dalam ${resetInSeconds} detik.`
+    }
+  }
+
   const { name, email, phone, password } = data
 
   if (!email || !password || !phone) {
@@ -20,7 +40,6 @@ export async function register(data: {
     return { error: "Password minimal 6 karakter" }
   }
 
-  // Validasi format nomor telepon (hanya angka, 10-13 digit)
   const cleanPhone = phone.replace(/\D/g, '')
   if (!/^[0-9]{10,13}$/.test(cleanPhone)) {
     return { error: "Nomor telepon tidak valid (10-13 digit angka)" }
@@ -50,6 +69,6 @@ export async function register(data: {
   if (user.role === "admin") {
     redirect("/admin")
   }
-  
+
   redirect("/")
 }
