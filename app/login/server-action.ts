@@ -1,7 +1,7 @@
 "use server"
 
 import { prisma } from "@/lib/prisma"
-import { verifyPassword, setSession } from "@/lib/auth"
+import { setSession } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { adminAuth } from "@/lib/firebase-admin"
 import { loginRateLimiter } from "@/lib/rate-limit"
@@ -16,75 +16,31 @@ async function getIP(): Promise<string> {
 
 async function checkLoginRateLimit(ip: string) {
   const { success, limit, reset } = await loginRateLimiter.limit(`login:${ip}`)
-
   if (!success) {
     const resetInSeconds = Math.ceil((reset - Date.now()) / 1000)
     return {
       error: `Terlalu banyak percobaan login. Maksimal ${limit} request per menit. Coba lagi dalam ${resetInSeconds} detik.`
     }
   }
-
   return null
 }
 
-export async function login(data: {
-  email: string
-  password: string
-}) {
-  const ip = await getIP()
-  const rateLimitError = await checkLoginRateLimit(ip)
-  if (rateLimitError) return rateLimitError
-
-  const { email, password } = data
-
-  if (!email || !password) {
-    return { error: "Email dan password wajib diisi" }
-  }
-
-  const user = await prisma.user.findUnique({
-    where: { email },
-  })
-
-  if (!user) {
-    return { error: "Email atau password salah" }
-  }
-
-  const isValid = await verifyPassword(password, user.password)
-
-  if (!isValid) {
-    return { error: "Email atau password salah" }
-  }
-
-  await setSession(user.id)
-
-  if (user.role === "admin") {
-    redirect("/admin")
-  }
-
-  redirect("/")
-}
-
-export async function loginWithGoogle(idToken: string) {
-  const ip = await getIP()
-  const rateLimitError = await checkLoginRateLimit(ip)
-  if (rateLimitError) return rateLimitError
-
+// Fungsi shared untuk proses setelah idToken diverifikasi
+async function handleFirebaseLogin(idToken: string) {
   let decodedToken
   try {
     decodedToken = await adminAuth.verifyIdToken(idToken)
   } catch {
-    return { error: "Token Google tidak valid" }
+    return { error: "Token tidak valid, silakan coba lagi" }
   }
 
   const { email, name, picture } = decodedToken
 
   if (!email) {
-    return { error: "Akun Google tidak memiliki email" }
+    return { error: "Akun tidak memiliki email" }
   }
 
-  let user = await prisma.user.findUnique({
-    where: { email },
-  })
+  let user = await prisma.user.findUnique({ where: { email } })
 
   if (!user) {
     user = await prisma.user.create({
@@ -105,4 +61,20 @@ export async function loginWithGoogle(idToken: string) {
   }
 
   redirect("/")
+}
+
+export async function login(idToken: string) {
+  const ip = await getIP()
+  const rateLimitError = await checkLoginRateLimit(ip)
+  if (rateLimitError) return rateLimitError
+
+  return await handleFirebaseLogin(idToken)
+}
+
+export async function loginWithGoogle(idToken: string) {
+  const ip = await getIP()
+  const rateLimitError = await checkLoginRateLimit(ip)
+  if (rateLimitError) return rateLimitError
+
+  return await handleFirebaseLogin(idToken)
 }
