@@ -49,7 +49,7 @@ export default async function HomePage() {
               <li>Pilih menu <strong> New Order</strong> untuk mengisi data layanan laundry.</li>
               <li>Lengkapi info customer, detail order, dan alamat pengambilan.</li>
               <li>Simpan order, lalu buka menu <strong> List Order</strong> untuk melihat daftar order.</li>
-              <li>Tekan tombol <strong>Bayar</strong> untuk melanjutkan pembayaran melalui WhatsApp.</li>
+              <li>Tekan tombol <strong>Bayar/Contact Admin</strong> untuk melanjutkan pembayaran melalui WhatsApp.</li>
               <li>Pembayaran dilakukan secara manual dan harus lunas sebelum laundry diproses.</li>
               <li>Setelah selesai, dapat memesan ulang dengan menekan tombol <strong>Pesan Ulang</strong> pada halaman <strong> List Order</strong></li>
             </ol>

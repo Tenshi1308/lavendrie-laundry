@@ -14,7 +14,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 
-const ADMIN_PHONE = "6282121152064" // nomor WhatsApp admin
+const ADMIN_PHONE = "6281215132220" // nomor WhatsApp admin
 
 interface ButtonContactAdminProps {
   order: {
@@ -31,14 +31,14 @@ export function ButtonContactAdmin({ order }: ButtonContactAdminProps) {
   const [open, setOpen] = useState(false)
 
   const handleRedirectWA = () => {
-    const message = `Halo Lavendrie Laundry, saya ingin konfirmasi penjemputan untuk order dengan detail:
+    const message = `Halo Lavendrie Laundry, saya ingin konfirmasi pengambilan laundry untuk order dengan detail:
 - Kode Order: ${order.orderCode}
 - Nama: ${order.customerName}
 - Nomor HP: ${order.phone}
 - Layanan: ${order.serviceType}
 - Alamat: ${order.address}
-- Tanggal penjemputan: ${new Date(order.orderDate).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
-Mohon informasi jadwal penjemputan. Terima kasih.`
+- Tanggal pengambilan: ${new Date(order.orderDate).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
+Mohon informasi jadwal pengambilan. Terima kasih.`
     const encodedMessage = encodeURIComponent(message)
     window.location.href = `https://wa.me/${ADMIN_PHONE}?text=${encodedMessage}`
   }
@@ -57,10 +57,10 @@ Mohon informasi jadwal penjemputan. Terima kasih.`
       <AlertDialog open={open} onOpenChange={setOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Konfirmasi Penjemputan</AlertDialogTitle>
+            <AlertDialogTitle>Konfirmasi Pengambilan</AlertDialogTitle>
             <AlertDialogDescription asChild>
               <div className="space-y-3">
-                <p>Anda akan menghubungi admin untuk konfirmasi penjemputan dengan detail:</p>
+                <p>Anda akan menghubungi admin untuk konfirmasi pengambilan laundry dengan detail:</p>
                 <div className="bg-muted rounded-md p-3 text-sm space-y-1">
                   <p className="text-muted-foreground">Nama: {order.customerName}</p>
                   <p className="text-muted-foreground">Telepon: {order.phone}</p>

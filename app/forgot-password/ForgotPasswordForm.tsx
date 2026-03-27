@@ -102,10 +102,10 @@ export function ForgotPasswordForm() {
             variant="ghost"
             size="sm"
             className="w-full flex items-center gap-2"
-            onClick={() => router.push("/login")}
+            onClick={() => router.back()}
           >
             <ArrowLeft className="h-4 w-4" />
-            Kembali ke Login
+            Kembali
           </Button>
         </form>
       </CardContent>

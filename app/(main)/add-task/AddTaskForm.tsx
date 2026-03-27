@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { createOrder } from "./server-action"
-import { MapPin, Loader2, CheckCircle2, AlertCircle, ChevronDown, User, Phone, Calendar, Shirt } from "lucide-react"
+import { MapPin, Loader2, CheckCircle2, AlertCircle, ChevronDown, User, Phone, Calendar, Shirt, ChevronUp } from "lucide-react"
 
 interface AddressDetail {
   namaTempatAtauJalan: string
@@ -54,7 +54,7 @@ export function AddTaskForm() {
   function handleChange(field: string, value: string) {
     setFormData((prev) => {
       const newData = { ...prev, [field]: value }
-      if (field === "serviceType" && value === "Jemput") {
+      if (field === "serviceType" && value === "Ambil") {
         newData.duration = ""
         newData.workType = ""
       }
@@ -141,7 +141,7 @@ export function AddTaskForm() {
     }
   }
 
-  const showLaundryDetails = formData.serviceType !== "Jemput"
+  const showLaundryDetails = formData.serviceType !== "Ambil"
 
   return (
     <div className="min-h-screen bg-gray-50/50 px-4">
@@ -220,6 +220,7 @@ export function AddTaskForm() {
               <div className="space-y-1.5">
                 <Label className="text-sm font-medium text-gray-700">
                   Jenis Layanan <span className="text-red-400">*</span>
+                  <p className="text-xs text-gray-400 font-normal">"Antar" jika ingin melakukan laundry, "Ambil" jika ingin mengambil laundry</p>
                 </Label>
                 <Select
                   value={formData.serviceType}
@@ -231,7 +232,7 @@ export function AddTaskForm() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Antar">Antar</SelectItem>
-                    <SelectItem value="Jemput">Jemput</SelectItem>
+                    <SelectItem value="Ambil">Ambil</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -289,7 +290,7 @@ export function AddTaskForm() {
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
             <div className="px-5 py-3 bg-gray-50 border-b border-gray-100 flex items-center gap-2">
               <MapPin className="h-4 w-4 text-gray-400" />
-              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Alamat Pengambilan</span>
+              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Alamat</span>
             </div>
             <div className="p-5 space-y-3">
               {/* Tombol deteksi lokasi */}
@@ -309,7 +310,7 @@ export function AddTaskForm() {
               {locationStatus === "success" && (
                 <div className="flex items-center gap-2 text-xs text-green-700 bg-green-50 rounded-lg px-3 py-2">
                   <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
-                  Lokasi terdeteksi. Lengkapi RT/RW dan detail lainnya jika perlu.
+                  Lokasi terdeteksi. Lengkapi detail lainnya jika perlu.
                 </div>
               )}
 
@@ -327,7 +328,7 @@ export function AddTaskForm() {
                   className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 transition-colors"
                 >
                   <ChevronDown className="h-3.5 w-3.5" />
-                  Atau isi alamat manual
+                  Isi alamat manual
                 </button>
               )}
 
@@ -445,6 +446,17 @@ export function AddTaskForm() {
                     />
                   </div>
                 </div>
+              )}
+
+              {showAddressDetail && (
+                <button
+                  type="button"
+                  onClick={() => setShowAddressDetail(false)}
+                  className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <ChevronUp className="h-3.5 w-3.5" />
+                  Tutup
+                </button>
               )}
             </div>
           </div>

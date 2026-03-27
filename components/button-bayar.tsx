@@ -14,7 +14,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 
-const ADMIN_PHONE = "081215132220" // nomor WhatsApp admin
+const ADMIN_PHONE = "6281215132220" // nomor WhatsApp admin
 
 interface ButtonBayarProps {
   order: {
@@ -62,7 +62,7 @@ Mohon info total pembayaran dan petunjuk pembayaran. Terima kasih.`
             <AlertDialogTitle>Konfirmasi Pembayaran</AlertDialogTitle>
             <AlertDialogDescription asChild>
               <div className="space-y-3">
-                <p>Order baru akan dibuat dengan detail yang sama:</p>
+                <p>Anda akan menghubungi admin untuk melakukan pembayaran laundry dengan detail:</p>
                 <div className="bg-muted rounded-md p-3 text-sm space-y-1">
                   <p className="text-muted-foreground">Nama: {order.customerName}</p>
                   <p className="text-muted-foreground">Telepon: {order.phone}</p>
@@ -71,7 +71,7 @@ Mohon info total pembayaran dan petunjuk pembayaran. Terima kasih.`
                   <p className="text-muted-foreground">Durasi: {order.duration}</p>
                   <p className="text-muted-foreground">Alamat: {order.address}</p>
                 </div>
-                <p className="text-sm">Order baru akan muncul di riwayat dan siap untuk dibayar.</p>
+                <p className="text-sm">Anda akan diarahkan ke WhatsApp untuk pembayaran dengan admin.</p>
               </div>
             </AlertDialogDescription>
           </AlertDialogHeader>

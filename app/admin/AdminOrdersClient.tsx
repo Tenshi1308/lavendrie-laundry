@@ -89,7 +89,7 @@ export default function AdminOrdersClient({ orders: initialOrders }: { orders: O
               Customer: <span className="font-medium text-foreground">{order.customerName}</span> - {order.phone}
             </p>
             <p className="text-sm text-muted-foreground">
-              Layanan: {order.serviceType === "Jemput" ? order.serviceType : `${order.serviceType} - ${order.workType} (${order.duration})`}
+              Layanan: {order.serviceType === "Ambil" ? order.serviceType : `${order.serviceType} - ${order.workType} (${order.duration})`}
             </p>
             <p className="text-sm text-muted-foreground">Alamat: {order.address}</p>
             <p className="text-sm text-muted-foreground">

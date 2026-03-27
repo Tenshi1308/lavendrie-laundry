@@ -137,7 +137,7 @@ export default function ArchivedOrdersClient({ orders }: { orders: Order[] }) {
                                     <div className="flex justify-between items-center mt-2">
                                         <div>
                                             <p className="text-sm text-muted-foreground">
-                                                Layanan: {order.serviceType} - {order.workType} ({order.duration})
+                                                Layanan: {order.serviceType === "Ambil" ? order.serviceType : `${order.serviceType} - ${order.workType} (${order.duration})`}
                                             </p>
                                             <p className="text-xs text-muted-foreground mt-1">Telepon: {order.phone}</p>
                                         </div>
